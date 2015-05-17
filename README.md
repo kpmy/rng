@@ -1,2 +1,2 @@
 # rng
-RelaxNG schema parser
+RelaxNG http://relaxng.org/ schema parser
