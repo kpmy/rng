@@ -28,7 +28,14 @@ func init() {
 	Constructors["except"] = std.Except
 	Constructors["mixed"] = std.Mixed
 	Constructors["optional"] = std.Optional
-
+	Constructors["anyName"] = std.AnyName
+	Constructors["nsName"] = std.NSName
+	Constructors["data"] = std.Data
+	Constructors["text"] = std.Text
+	Constructors["name"] = std.Name
+	Constructors["empty"] = std.Empty
+	Constructors["value"] = std.Value
+	Constructors["param"] = std.Param
 }
 
 func Construct(name xml.Name) (ret schema.Guide) {
@@ -110,27 +117,18 @@ func (w *Walker) traverse(n *Node) {
 		} else {
 			halt.As(100, "ref not found", n.Name)
 		}
-	//constraint elements
-	case "choice", "interleave", "optional", "zeroOrMore", "oneOrMore", "group", "list", "mixed", "except":
-		important()
-		this = Construct(n.XMLName)
-		w.GrowDown(this)
-		w.forEach(n, traverseWrap())
-		w.Up()
-	case "anyName":
-	case "nsName":
-	case "empty":
 	//content elements
-	case "element", "attribute":
+	case "element", "attribute", "data", "text", "value", "name", "param":
+		fallthrough
+	//constraint elements
+	case "choice", "interleave", "optional", "zeroOrMore", "oneOrMore", "group", "list", "mixed", "except", "anyName", "nsName", "empty":
 		important()
 		this = Construct(n.XMLName)
+		std.NameAttr(this, n.Name)
 		w.GrowDown(this)
 		w.forEach(n, traverseWrap())
 		w.Up()
-	case "data":
-	case "text":
-	case "value":
-	case "name":
+	//skipped elements
 	case "description": //dc:descriprion do nothing
 	default:
 		halt.As(100, n.XMLName)

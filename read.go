@@ -6,9 +6,9 @@ import (
 	"rng/loader"
 )
 
-//const defaultName = "OpenDocument-v1.2-os-schema.rng"
+const defaultName = "OpenDocument-v1.2-os-schema.rng"
 
-const defaultName = "relaxng.rng"
+//const defaultName = "relaxng.rng"
 
 var inputName string
 
