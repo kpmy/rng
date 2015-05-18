@@ -1,19 +1,70 @@
 package loader
 
 import (
+	"encoding/xml"
 	"fmt"
+	"github.com/kpmy/ypk/assert"
 	"github.com/kpmy/ypk/halt"
 	"io"
+	"rng/schema"
+	"rng/schema/std"
 )
+
+const urn_rng_1 = "http://relaxng.org/ns/structure/1.0"
+
+var Constructors map[string]func() schema.Guide
+
+func init() {
+	Constructors = make(map[string]func() schema.Guide)
+	Constructors["choice"] = std.Choice
+	Constructors["element"] = std.Element
+	Constructors["interleave"] = std.Interleave
+	Constructors["attribute"] = std.Attribute
+	Constructors["zeroOrMore"] = std.ZeroOrMore
+	Constructors["oneOrMore"] = std.OneOrMore
+	Constructors["oneOrMore"] = std.OneOrMore
+	Constructors["group"] = std.Group
+	Constructors["list"] = std.List
+	Constructors["except"] = std.Except
+	Constructors["mixed"] = std.Mixed
+	Constructors["optional"] = std.Optional
+
+}
+
+func Construct(name xml.Name) (ret schema.Guide) {
+	assert.For(name.Space == urn_rng_1, 20, name)
+	fn := Constructors[name.Local]
+	assert.For(fn != nil, 40, name)
+	ret = fn()
+	assert.For(ret != nil, 60, name)
+	return
+}
 
 type Walker struct {
 	root  *Node
 	cache map[string]*Node
+	start schema.Start
+	pos   schema.Guide
 }
 
 func (w *Walker) Init() *Walker {
 	w.cache = make(map[string]*Node)
+	w.start = std.Start()
+	w.pos = w.start
 	return w
+}
+
+func (w *Walker) GrowDown(g schema.Guide) {
+	w.pos.Add(g)
+	w.pos = g
+}
+
+func (w *Walker) Grow(g schema.Guide) {
+	w.pos.Add(g)
+}
+
+func (w *Walker) Up() {
+	w.pos = w.pos.Parent()
 }
 
 func (w *Walker) forEach(n *Node, do func(w *Walker, n *Node)) {
@@ -29,13 +80,28 @@ func traverseWrap() func(w *Walker, n *Node) {
 }
 
 func (w *Walker) traverse(n *Node) {
+	var (
+		this    schema.Guide
+		skip    *bool
+		skipped = func() {
+			s := true
+			skip = &s
+		}
+		important = func() {
+			s := false
+			skip = &s
+		}
+	)
+
 	switch n.XMLName.Local {
 	//structure elements
 	case "grammar":
+		skipped()
 		if start := n.FindByXMLName("start"); start != nil {
 			w.forEach(start, traverseWrap())
 		}
 	case "ref":
+		skipped()
 		if ref := w.root.FindByName(n.Name); ref != nil {
 			if w.cache[n.Name] == nil {
 				w.cache[n.Name] = ref
@@ -44,86 +110,46 @@ func (w *Walker) traverse(n *Node) {
 		} else {
 			halt.As(100, "ref not found", n.Name)
 		}
-	case "choice":
-		w.forEach(n, func(w *Walker, n *Node) {
-			fmt.Println(n.XMLName.Local+":"+n.Name, "|")
-			w.traverse(n)
-		})
-	case "interleave":
-		w.forEach(n, func(w *Walker, n *Node) {
-			fmt.Println(n.XMLName.Local+":"+n.Name, "*")
-			w.traverse(n)
-		})
-	case "optional":
-		w.forEach(n, func(w *Walker, n *Node) {
-			fmt.Println(n.XMLName.Local+":"+n.Name, "*")
-			w.traverse(n)
-		})
-	case "zeroOrMore":
-		w.forEach(n, func(w *Walker, n *Node) {
-			fmt.Println(n.XMLName.Local+":"+n.Name, "?")
-			w.traverse(n)
-		})
-	case "oneOrMore":
-		w.forEach(n, func(w *Walker, n *Node) {
-			fmt.Println(n.XMLName.Local+":"+n.Name, "??")
-			w.traverse(n)
-		})
-	case "group":
-		w.forEach(n, func(w *Walker, n *Node) {
-			fmt.Println(n.XMLName.Local+":"+n.Name, ".")
-			w.traverse(n)
-		})
-	case "list":
-		w.forEach(n, func(w *Walker, n *Node) {
-			fmt.Println(n.XMLName.Local+":"+n.Name, ",")
-			w.traverse(n)
-		})
-	case "mixed":
-		w.forEach(n, func(w *Walker, n *Node) {
-			fmt.Println(n.XMLName.Local+":"+n.Name, " ")
-			w.traverse(n)
-		})
-
-	//content elements
-	case "element":
-		fmt.Println("BEGIN", n.Name)
+	//constraint elements
+	case "choice", "interleave", "optional", "zeroOrMore", "oneOrMore", "group", "list", "mixed", "except":
+		important()
+		this = Construct(n.XMLName)
+		w.GrowDown(this)
 		w.forEach(n, traverseWrap())
-	case "attribute":
-		fmt.Print("attr ", n.Name)
-		w.forEach(n, traverseWrap())
-	case "data":
-		fmt.Println("data type ", n.Type)
-	case "text":
-		fmt.Println("text")
-	case "value":
-		fmt.Println("value ", n.Data())
-	case "name":
-		fmt.Println("name", n.Data())
-	//constraints elements
+		w.Up()
 	case "anyName":
-		fmt.Println("anyName")
-		w.forEach(n, traverseWrap())
-	case "except":
-		fmt.Println("except")
-		w.forEach(n, traverseWrap())
 	case "nsName":
-		fmt.Println("nsName", n.NS)
-		w.forEach(n, traverseWrap())
 	case "empty":
-		fmt.Println("empty")
+	//content elements
+	case "element", "attribute":
+		important()
+		this = Construct(n.XMLName)
+		w.GrowDown(this)
+		w.forEach(n, traverseWrap())
+		w.Up()
+	case "data":
+	case "text":
+	case "value":
+	case "name":
 	case "description": //dc:descriprion do nothing
 	default:
 		halt.As(100, n.XMLName)
 	}
+	if skip != nil {
+		assert.For(*skip || this != nil, 60, "no result for ", n.XMLName)
+	} else if this == nil {
+		fmt.Println("unhandled", n.XMLName)
+	}
 }
 
-func Load(input io.Reader) {
+func Load(input io.Reader) (ret schema.Start, err error) {
 	//only xml rng format for now
 	xrd := &XMLReader{rd: input}
 	if data, err := xrd.Read(); err == nil {
 		w := &Walker{root: data}
 		w.Init()
 		w.traverse(data)
+		ret = w.start
 	}
+	return
 }

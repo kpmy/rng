@@ -23,6 +23,7 @@ func main() {
 	}
 	if file, err := os.Open(inputName); err == nil {
 		defer file.Close()
-		loader.Load(file)
+		root, _ := loader.Load(file)
+		test(root)
 	}
 }
