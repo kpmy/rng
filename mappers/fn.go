@@ -16,8 +16,11 @@ func Iterate(g schema.Guide) []schema.Guide {
 	return i.List()
 }
 
-func Map(i []schema.Guide, fn func(schema.Guide)) {
+type Unary func(interface{}, ...interface{}) interface{}
+
+func Map(i []schema.Guide, fn Unary, meta ...interface{}) (ret []interface{}) {
 	for _, v := range i {
-		fn(v)
+		ret = append(ret, fn(v, meta...))
 	}
+	return
 }

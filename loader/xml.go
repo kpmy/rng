@@ -20,6 +20,7 @@ type Node struct {
 	Combine  string `xml:"combine,attr"`
 	DataType string `xml:"datatypeLibrary,attr"`
 	CharData string `xml:",chardata"`
+	Href     string `xml:"href,attr"`
 	Inner    []Node `xml:",any"`
 }
 
@@ -40,6 +41,9 @@ func (p *Node) String() (ret string) {
 	}
 	if p.Data() != "" {
 		ret = fmt.Sprint(ret, "data: ", p.Data(), " ")
+	}
+	if p.Href != "" {
+		ret = fmt.Sprint(ret, "href: ", p.Href, " ")
 	}
 	if len(p.Inner) > 0 {
 		ret = fmt.Sprintln(ret)

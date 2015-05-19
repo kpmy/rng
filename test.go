@@ -6,9 +6,11 @@ import (
 	"reflect"
 	"rng/mappers"
 	"rng/schema"
+	"rng/schema/std"
 )
 
 var level int
+var passed map[string]schema.Guide = make(map[string]schema.Guide)
 
 func tab() (ret string) {
 	for i := 0; i < level; i++ {
@@ -17,39 +19,45 @@ func tab() (ret string) {
 	return
 }
 
-func verbose(_g schema.Guide) {
+func verbose(_g interface{}, meta ...interface{}) (ret interface{}) {
 	level++
+	fmt.Print(meta...)
+	delim := " "
 	switch g := _g.(type) {
 	case schema.Start:
-		fmt.Println(tab(), "root")
+		fmt.Println(tab(), "$start", g)
 	case schema.Choice:
-		fmt.Println(tab(), "has one of")
+		fmt.Println(tab(), "choice")
 	case schema.Element:
-		fmt.Println(tab(), "element", g.Name())
+		fmt.Println(tab(), "$element", g.Name())
 	case schema.Attribute:
-		fmt.Println(tab(), "attribute", g.Name())
+		fmt.Println(tab(), "$attribute", g.Name())
 	case schema.Interleave:
-		fmt.Println(tab(), "some of")
+		fmt.Println(tab(), "interleave")
 	case schema.ZeroOrMore:
-		fmt.Println(tab(), "zero or more")
+		fmt.Println(tab(), "zero-or-more")
 	case schema.OneOrMore:
-		fmt.Println(tab(), "one or more")
+		fmt.Println(tab(), "one-or-more")
 	case schema.Optional:
 		fmt.Println(tab(), "optional")
 	case schema.Group:
 		fmt.Println(tab(), "group")
 	case schema.AnyName:
-		fmt.Println(tab(), "any name")
+		fmt.Println(tab(), "any-name")
 	case schema.Except:
 		fmt.Println(tab(), "except")
 	case schema.NSName:
-		fmt.Println(tab(), "ns name")
+		fmt.Println(tab(), "ns-name", g.NS())
 	case schema.Text:
 		fmt.Println(tab(), "text")
 	case schema.Data:
-		fmt.Println(tab(), "data")
+		fmt.Print(tab(), "data")
+		if g.Type() != "" {
+			fmt.Print(" ", "type ", g.Type())
+		}
+		fmt.Println()
 	case schema.Value:
-		fmt.Println(tab(), "value")
+		fmt.Println(tab(), "value", g.Data())
 	case schema.Name:
 		fmt.Println(tab(), "name")
 	case schema.Empty:
@@ -60,11 +68,19 @@ func verbose(_g schema.Guide) {
 		fmt.Println(tab(), "mixed")
 	case schema.Param:
 		fmt.Println(tab(), "param")
+	case schema.Ref:
+		fmt.Println(tab(), "ref", g.Name())
+	case schema.ExternalRef:
+		fmt.Println(tab(), "externalRef", g.Href())
 	default:
 		halt.As(100, reflect.TypeOf(g))
 	}
-	mappers.Map(mappers.Iterate(_g), verbose)
+	if id := _g.(std.Identified).Id(); passed[id] == nil {
+		passed[id] = _g.(schema.Guide)
+		mappers.Map(mappers.Iterate(_g.(schema.Guide)), verbose, delim)
+	}
 	level--
+	return
 }
 
 func test(start schema.Start) {

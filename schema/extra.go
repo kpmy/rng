@@ -19,3 +19,11 @@ type DataTyped interface {
 type Contented interface {
 	Data(...string) string
 }
+
+type Combined interface {
+	Combine(...string) string
+}
+
+type Referred interface {
+	Href(...string) string
+}

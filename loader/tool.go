@@ -22,7 +22,6 @@ func init() {
 	Constructors["attribute"] = std.Attribute
 	Constructors["zeroOrMore"] = std.ZeroOrMore
 	Constructors["oneOrMore"] = std.OneOrMore
-	Constructors["oneOrMore"] = std.OneOrMore
 	Constructors["group"] = std.Group
 	Constructors["list"] = std.List
 	Constructors["except"] = std.Except
@@ -36,6 +35,8 @@ func init() {
 	Constructors["empty"] = std.Empty
 	Constructors["value"] = std.Value
 	Constructors["param"] = std.Param
+	Constructors["ref"] = std.Ref
+	Constructors["externalRef"] = std.ExternalRef
 }
 
 func Construct(name xml.Name) (ret schema.Guide) {
@@ -47,15 +48,20 @@ func Construct(name xml.Name) (ret schema.Guide) {
 	return
 }
 
+type Cached struct {
+	node *Node
+	root schema.Guide
+}
+
 type Walker struct {
 	root  *Node
-	cache map[string]*Node
+	cache map[string]*Cached
 	start schema.Start
 	pos   schema.Guide
 }
 
 func (w *Walker) Init() *Walker {
-	w.cache = make(map[string]*Node)
+	w.cache = make(map[string]*Cached)
 	w.start = std.Start()
 	w.pos = w.start
 	return w
@@ -63,6 +69,7 @@ func (w *Walker) Init() *Walker {
 
 func (w *Walker) GrowDown(g schema.Guide) {
 	w.pos.Add(g)
+	g.Parent(w.pos)
 	w.pos = g
 }
 
@@ -110,9 +117,18 @@ func (w *Walker) traverse(n *Node) {
 	case "ref":
 		skipped()
 		if ref := w.root.FindByName(n.Name); ref != nil {
-			if w.cache[n.Name] == nil {
-				w.cache[n.Name] = ref
+			if cached := w.cache[n.Name]; cached == nil {
+				this = Construct(n.XMLName)
+				{
+					std.NameAttr(this, n.Name)
+					//std.RefAttr(this, cached.root)
+				}
+				w.cache[n.Name] = &Cached{node: ref, root: this}
+				w.GrowDown(this)
 				w.forEach(ref, traverseWrap())
+				w.Up()
+			} else {
+				w.Grow(cached.root)
 			}
 		} else {
 			halt.As(100, "ref not found", n.Name)
@@ -121,10 +137,18 @@ func (w *Walker) traverse(n *Node) {
 	case "element", "attribute", "data", "text", "value", "name", "param":
 		fallthrough
 	//constraint elements
-	case "choice", "interleave", "optional", "zeroOrMore", "oneOrMore", "group", "list", "mixed", "except", "anyName", "nsName", "empty":
+	case "choice", "interleave", "optional", "zeroOrMore", "oneOrMore", "group", "list", "mixed", "except", "anyName", "nsName", "empty", "externalRef":
 		important()
 		this = Construct(n.XMLName)
-		std.NameAttr(this, n.Name)
+		{
+			std.NameAttr(this, n.Name)
+			std.CharDataAttr(this, n.Data())
+			std.TypeAttr(this, n.Type)
+			std.NSAttr(this, n.NS)
+			std.DataTypeAttr(this, n.DataType)
+			std.CombineAttr(this, n.Combine)
+			std.HrefAttr(this, n.Href)
+		}
 		w.GrowDown(this)
 		w.forEach(n, traverseWrap())
 		w.Up()

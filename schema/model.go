@@ -3,6 +3,7 @@ package schema
 type Guide interface {
 	Add(Guide)
 	Parent(...Guide) Guide
+	String() string
 }
 
 type Start interface {
@@ -74,6 +75,7 @@ type AnyName interface {
 
 type NSName interface {
 	Guide
+	NSed
 	This() NSName
 }
 
@@ -89,11 +91,13 @@ type Empty interface {
 
 type Value interface {
 	Guide
+	Contented
 	This() Value
 }
 
 type Data interface {
 	Guide
+	Typed
 	This() Data
 }
 
@@ -105,4 +109,16 @@ type Text interface {
 type Param interface {
 	Guide
 	This() Param
+}
+
+type Ref interface {
+	Guide
+	Named
+	This() Ref
+}
+
+type ExternalRef interface {
+	Guide
+	Referred
+	This() ExternalRef
 }
