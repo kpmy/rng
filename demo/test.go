@@ -80,9 +80,24 @@ func verbose(_g interface{}, meta ...interface{}) (ret interface{}) {
 		mappers.Map(mappers.Iterate(_g.(schema.Guide)), verbose, delim)
 	}
 	level--
-	return
+	return _g
+}
+
+func print(_g interface{}, meta ...interface{}) interface{} {
+	fmt.Println(_g)
+	return _g
+}
+
+func elementFilter(name string) mappers.Bool {
+	return func(g schema.Guide, _ ...interface{}) bool {
+		e, ok := g.(schema.Element)
+		return ok && e.Name() == name
+	}
 }
 
 func test(start schema.Start) {
 	verbose(start)
+	fmt.Println("---")
+	mappers.Traverse(start, print)
+	fmt.Println("---")
 }

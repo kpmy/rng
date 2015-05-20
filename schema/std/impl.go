@@ -1,7 +1,9 @@
 package std
 
 import (
+	"fmt"
 	"github.com/kpmy/ypk/assert"
+	"github.com/kpmy/ypk/fn"
 	"rng/schema"
 	"strconv"
 )
@@ -221,8 +223,12 @@ func (x *start) String() string      { return "grammar" }
 func (x *choice) String() string     { return "choice" }
 func (x *interleave) String() string { return "interleave" }
 func (x *mixed) String() string      { return "mixed" }
-func (x *element) String() string    { return "element" }
-func (x *attribute) String() string  { return "attribute" }
+func (x *element) String() (ret string) {
+	return fmt.Sprint("element", " ", fn.MaybeString("'", x.Name(), "'"))
+}
+func (x *attribute) String() string {
+	return fmt.Sprint("attribute", " ", fn.MaybeString("'", x.Name(), "'"))
+}
 func (x *group) String() string      { return "group" }
 func (x *list) String() string       { return "list" }
 func (x *optional) String() string   { return "optional" }
@@ -237,8 +243,10 @@ func (x *value) String() string      { return "value" }
 func (x *data) String() string       { return "data" }
 func (x *text) String() string       { return "text" }
 func (x *param) String() string      { return "param" }
-func (x *ref) String() string        { return "ref" }
-func (x *extRef) String() string     { return "externalRef" }
+func (x *ref) String() string {
+	return fmt.Sprint("ref", " ", fn.MaybeString("'", x.Name(), "'"))
+}
+func (x *extRef) String() string { return "externalRef" }
 
 func Start() schema.Start {
 	return &start{}
