@@ -240,9 +240,11 @@ func (x *nsName) String() string     { return "nsName" }
 func (x *name) String() string       { return "name" }
 func (x *empty) String() string      { return "empty" }
 func (x *value) String() string      { return "value" }
-func (x *data) String() string       { return "data" }
-func (x *text) String() string       { return "text" }
-func (x *param) String() string      { return "param" }
+func (x *data) String() string {
+	return fmt.Sprint("data", " ", fn.MaybeString("type: ", x.Type(), " "))
+}
+func (x *text) String() string  { return "text" }
+func (x *param) String() string { return "param" }
 func (x *ref) String() string {
 	return fmt.Sprint("ref", " ", fn.MaybeString("'", x.Name(), "'"))
 }

@@ -1,4 +1,4 @@
-package mappers
+package fn
 
 import (
 	"github.com/kpmy/ypk/assert"
@@ -6,12 +6,12 @@ import (
 	"rng/schema"
 )
 
-type Iterable interface {
+type iterable interface {
 	List() []schema.Guide
 }
 
 func Iterate(g schema.Guide) []schema.Guide {
-	i, ok := g.(Iterable)
+	i, ok := g.(iterable)
 	assert.For(ok, 20, reflect.TypeOf(g))
 	return i.List()
 }
@@ -92,7 +92,7 @@ func Select(root schema.Guide, fn Bool, meta ...interface{}) (ret []schema.Guide
 	return
 }
 
-func Deref(_r schema.Guide) (ret []schema.Guide) {
+func Deref(_r schema.Guide) (ret []schema.Guide, cycle bool) {
 	ref := make(map[string]schema.Guide)
 	if r, ok := _r.(schema.Ref); ok {
 		Map(Iterate(r), func(_i interface{}, _ ...interface{}) interface{} {
@@ -100,9 +100,12 @@ func Deref(_r schema.Guide) (ret []schema.Guide) {
 			case schema.Ref:
 				if ref[i.Name()] == nil {
 					ref[i.Name()] = i
-					ret = append(ret, Deref(i)...)
+					tmp, cycled := Deref(i)
+					cycle = cycled
+					ret = append(ret, tmp...)
 				} else {
 					ret = append(ret, i)
+					cycle = true
 				}
 			default:
 				ret = append(ret, _i.(schema.Guide))

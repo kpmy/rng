@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/kpmy/ypk/halt"
 	"reflect"
-	"rng/mappers"
+	"rng/fn"
 	"rng/schema"
 	"rng/schema/std"
 )
@@ -77,7 +77,7 @@ func verbose(_g interface{}, meta ...interface{}) (ret interface{}) {
 	}
 	if id := _g.(std.Identified).Id(); passed[id] == nil {
 		passed[id] = _g.(schema.Guide)
-		mappers.Map(mappers.Iterate(_g.(schema.Guide)), verbose, delim)
+		fn.Map(fn.Iterate(_g.(schema.Guide)), verbose, delim)
 	}
 	level--
 	return _g
@@ -88,7 +88,7 @@ func print(_g interface{}, meta ...interface{}) interface{} {
 	return _g
 }
 
-func elementFilter(name string) mappers.Bool {
+func elementFilter(name string) fn.Bool {
 	return func(g schema.Guide, _ ...interface{}) bool {
 		e, ok := g.(schema.Element)
 		return ok && e.Name() == name
@@ -98,6 +98,6 @@ func elementFilter(name string) mappers.Bool {
 func test(start schema.Start) {
 	verbose(start)
 	fmt.Println("---")
-	mappers.Traverse(start, print)
+	fn.Traverse(start, print)
 	fmt.Println("---")
 }
