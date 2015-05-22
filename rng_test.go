@@ -89,6 +89,7 @@ func TestAuto(t *testing.T) {
 	auto.Null()
 }
 
+//что-то сложновато
 func TestSchemaToInstance(t *testing.T) {
 	if file, err := os.Open("relaxng.rng"); err == nil {
 		defer file.Close()
@@ -101,11 +102,11 @@ func TestSchemaToInstance(t *testing.T) {
 		traverse = func(_g interface{}, meta ...interface{}) interface{} {
 			//fmt.Println(string(buf.Bytes()))
 			switch g := _g.(type) {
-			case schema.Choice, schema.Interleave, schema.ZeroOrMore:
+			case schema.Choice, schema.Interleave, schema.ZeroOrMore, schema.Optional, schema.OneOrMore:
 				wr.Begin(g.(schema.Guide))
 				fn.Map(fn.Iterate(g.(schema.Guide)), traverse, meta...)
 				wr.End()
-			case schema.Element, schema.Optional, schema.OneOrMore:
+			case schema.Element:
 			case schema.Attribute:
 				//get attr typ
 				wr.Attr(g.Name(), "string")

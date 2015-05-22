@@ -148,7 +148,7 @@ func (w *Writer) Begin(g schema.Guide) {
 	} else {
 		assert.For(g != nil, 20)
 		switch g.(type) {
-		case schema.Choice, schema.Interleave, schema.ZeroOrMore:
+		case schema.Choice, schema.Interleave, schema.ZeroOrMore, schema.OneOrMore, schema.Optional:
 			s := &Stage{guide: g, stack: list.New(), retName: w.this.name}
 			w.this.push(s)
 			s.content = append(s.content, &field{name: "_parent", typ: "*" + w.this.name})
