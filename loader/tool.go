@@ -2,10 +2,10 @@ package loader
 
 import (
 	"encoding/xml"
-	"fmt"
 	"github.com/kpmy/ypk/assert"
 	"github.com/kpmy/ypk/halt"
 	"io"
+	"log"
 	"rng/schema"
 	"rng/schema/std"
 )
@@ -160,7 +160,7 @@ func (w *Walker) traverse(n *Node) {
 	if skip != nil {
 		assert.For(*skip || this != nil, 60, "no result for ", n.XMLName)
 	} else if this == nil {
-		fmt.Println("unhandled", n.XMLName)
+		log.Println("unhandled", n.XMLName)
 	}
 }
 
