@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"github.com/ivpusic/golog"
 	"github.com/ivpusic/neo"
 	"github.com/ivpusic/neo-cors"
+	"github.com/ivpusic/neo/middlewares/logger"
 	"github.com/skratchdot/open-golang/open"
 	"os"
 	"rng/loader"
@@ -14,16 +15,21 @@ import (
 
 const schemaName = "OpenDocument-v1.2-os-schema.rng"
 
+var (
+	log = golog.GetLogger("application")
+)
+
 func main() {
 	if file, err := os.Open(schemaName); err == nil {
 		defer file.Close()
-		root, _ := loader.Load(file)
-		fmt.Println("loaded", root)
 		wg := &sync.WaitGroup{}
 		wg.Add(1)
 		go func(wg *sync.WaitGroup) {
 			app := neo.App()
+			app.Use(logger.Log)
 			app.Use(cors.Init())
+			root, _ := loader.Load(file)
+			log.Info("loaded", root)
 			app.Serve("/", "./build/web")
 			api.ServletRegister(app, root)
 			app.Start()
