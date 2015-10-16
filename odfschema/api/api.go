@@ -2,13 +2,13 @@ package api
 
 import (
 	"github.com/ivpusic/neo"
+	"github.com/kpmy/rng/schema"
 	"log"
-	"rng/schema"
 )
 
 func ServletRegister(app *neo.Application, root schema.Guide) {
-	app.Get("/api", func(ctx *neo.Ctx) {
+	app.Get("/api", func(ctx *neo.Ctx) (int, error) {
 		log.Println("api request")
-		ctx.Res.Text("{}", 200)
+		return 200, nil
 	})
 }

@@ -5,10 +5,10 @@ import (
 	"github.com/ivpusic/neo"
 	"github.com/ivpusic/neo-cors"
 	"github.com/ivpusic/neo/middlewares/logger"
+	"github.com/kpmy/rng/loader"
+	"github.com/kpmy/rng/odfschema/api"
 	"github.com/skratchdot/open-golang/open"
 	"os"
-	"rng/loader"
-	"rng/odfschema/api"
 	"sync"
 	"time"
 )
