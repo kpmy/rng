@@ -1,9 +1,9 @@
 package fn
 
 import (
+	"github.com/kpmy/rng/schema"
 	"github.com/kpmy/ypk/assert"
 	"reflect"
-	"rng/schema"
 )
 
 type iterable interface {

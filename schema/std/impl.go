@@ -2,9 +2,9 @@ package std
 
 import (
 	"fmt"
+	"github.com/kpmy/rng/schema"
 	"github.com/kpmy/ypk/assert"
 	"github.com/kpmy/ypk/fn"
-	"rng/schema"
 	"strconv"
 )
 

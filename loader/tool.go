@@ -2,12 +2,12 @@ package loader
 
 import (
 	"encoding/xml"
+	"github.com/kpmy/rng/schema"
+	"github.com/kpmy/rng/schema/std"
 	"github.com/kpmy/ypk/assert"
 	"github.com/kpmy/ypk/halt"
 	"io"
 	"log"
-	"rng/schema"
-	"rng/schema/std"
 )
 
 const urn_rng_1 = "http://relaxng.org/ns/structure/1.0"

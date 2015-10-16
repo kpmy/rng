@@ -3,11 +3,11 @@ package gen
 import (
 	"container/list"
 	"fmt"
+	"github.com/kpmy/rng/schema"
 	"github.com/kpmy/ypk/assert"
 	"github.com/kpmy/ypk/halt"
 	"io"
 	"reflect"
-	"rng/schema"
 	"strconv"
 )
 

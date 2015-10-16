@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/kpmy/rng/fn"
+	"github.com/kpmy/rng/schema"
+	"github.com/kpmy/rng/schema/std"
 	"github.com/kpmy/ypk/halt"
 	"reflect"
-	"rng/fn"
-	"rng/schema"
-	"rng/schema/std"
 )
 
 var level int

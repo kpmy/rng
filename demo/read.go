@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
+	"github.com/kpmy/rng/loader"
 	"os"
-	"rng/loader"
 )
 
 //const defaultName = "OpenDocument-v1.2-os-schema.rng"

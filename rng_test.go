@@ -3,13 +3,13 @@ package rng
 import (
 	"bytes"
 	"fmt"
+	"github.com/kpmy/rng/auto"
+	"github.com/kpmy/rng/fn"
+	"github.com/kpmy/rng/gen"
+	"github.com/kpmy/rng/loader"
+	"github.com/kpmy/rng/schema"
 	"github.com/kpmy/ypk/halt"
 	"os"
-	"rng/auto"
-	"rng/fn"
-	"rng/gen"
-	"rng/loader"
-	"rng/schema"
 	"testing"
 )
 
